@@ -18,5 +18,5 @@ func InitDatabase() {
 		panic("Failed to connect Database")
 	}
 
-	fmt.Println("Connection Opened to Database")
+	fmt.Println("👍🏽 Connection opened to database")
 }

@@ -12,7 +12,7 @@ import (
 
 func InitMigrations() {
 	database.DBConn.AutoMigrate(&models.Post{}, &models.Author{}, &models.Subscriber{})
-	fmt.Println("Auto-migrated all models")
+	fmt.Println("👍🏽 Auto-migrated all models")
 }
 
 func main() {

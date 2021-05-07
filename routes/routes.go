@@ -28,5 +28,5 @@ func SetupRoutes(fiberApp *fiber.App) {
 	postGroup := app.Group("/posts")
 	postGroup.Get("/", handlers.FetchPosts)
 	postGroup.Post("/", handlers.CreatePost)
-	postGroup.Get("/new", handlers.NewPost)
+	postGroup.Get("/new", handlers.NewPost) // protected
 }
