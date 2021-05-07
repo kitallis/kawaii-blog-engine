@@ -13,13 +13,40 @@ func SignInView(ctx *fiber.Ctx) error {
 	return ctx.Render("auth/new", nil, "layout/main")
 }
 
+func CreateSignedToken(author *models.Author) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+	ttl := time.Duration(72)
+	expiry := time.Now().Add(time.Hour * ttl)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["author_nick"] = author.Nick
+	claims["author_id"] = author.ID
+	claims["exp"] = expiry.Unix()
+
+	signedToken, err := token.SignedString([]byte(config.Config("SECRET")))
+
+	return signedToken, err
+}
+
+func CreateTokenCookie(ctx *fiber.Ctx, signedToken string) {
+	ctx.Cookie(&fiber.Cookie{
+		Name:     "token_",
+		Value:    signedToken,
+		Domain:   "",
+		Path:     "",
+		Expires:  time.Now().Add(time.Hour * 72),
+		Secure:   true,
+		HTTPOnly: true,
+		SameSite: "Strict",
+	})
+}
+
 func SignIn(ctx *fiber.Ctx) error {
 	type SignInData struct {
 		Email    string
 		Password string
 	}
+	
 	signIndata := new(SignInData)
-
 	if err := ctx.BodyParser(signIndata); err != nil {
 		ctx.Status(fiber.StatusInternalServerError)
 		return err
@@ -32,7 +59,6 @@ func SignIn(ctx *fiber.Ctx) error {
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(author.Password), []byte(signIndata.Password))
-
 	if err == bcrypt.ErrMismatchedHashAndPassword {
 		// TODO: gracefully handle password errors
 		ctx.Status(fiber.StatusUnauthorized)
@@ -42,29 +68,12 @@ func SignIn(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	token := jwt.New(jwt.SigningMethodHS256)
-	expiry := time.Now().Add(time.Hour * 72)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["author_nick"] = author.Nick
-	claims["author_id"] = author.ID
-	claims["exp"] = expiry.Unix()
-
-	signedToken, err := token.SignedString([]byte(config.Config("SECRET")))
-
+	signedToken, err := CreateSignedToken(author)
 	if err != nil {
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	ctx.Cookie(&fiber.Cookie{
-		Name:     "token_",
-		Value:    signedToken,
-		Domain:   "",
-		Path:     "",
-		Expires:  expiry,
-		Secure:   true,
-		HTTPOnly: true,
-		SameSite: "Strict",
-	})
+	CreateTokenCookie(ctx, signedToken)
 
 	return ctx.Redirect("/posts")
 }
