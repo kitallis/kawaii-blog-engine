@@ -18,7 +18,7 @@ func SetupRoutes(fiberApp *fiber.App) {
 	// auth
 	authGroup := app.Group("/auth")
 	authGroup.Get("/new", handlers.SignInView)
-	authGroup.Post("/", handlers.SignIn)
+	authGroup.Post("/", middlewares.SetTokenInCookie, handlers.SignIn)
 	// authGroup.Delete("/", handlers.SignOut)x
 
 	// author
