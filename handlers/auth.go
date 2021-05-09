@@ -13,27 +13,28 @@ func SignInView(ctx *fiber.Ctx) error {
 	return ctx.Render("auth/new", nil, "layout/main")
 }
 
-func CreateSignedToken(author *models.Author) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
-	ttl := time.Duration(72)
-	expiry := time.Now().Add(time.Hour * ttl)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["author_nick"] = author.Nick
-	claims["author_id"] = author.ID
-	claims["exp"] = expiry.Unix()
+func ExpirationTime(ttl time.Duration) time.Time {
+	return time.Now().Add(time.Hour * ttl)
+}
 
+func CreateSignedToken(claims map[string]interface{}) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+	tokenClaims := token.Claims.(jwt.MapClaims)
+	for key, value := range claims {
+		tokenClaims[key] = value
+	}
 	signedToken, err := token.SignedString([]byte(config.Config("SECRET")))
 
 	return signedToken, err
 }
 
-func CreateTokenCookie(ctx *fiber.Ctx, signedToken string) {
+func CreateTokenCookie(ctx *fiber.Ctx, token string) {
 	ctx.Cookie(&fiber.Cookie{
 		Name:     "token_",
-		Value:    signedToken,
+		Value:    token,
 		Domain:   "",
 		Path:     "",
-		Expires:  time.Now().Add(time.Hour * 72),
+		Expires:  ExpirationTime(72),
 		Secure:   true,
 		HTTPOnly: true,
 		SameSite: "Strict",
@@ -68,7 +69,12 @@ func SignIn(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	signedToken, err := CreateSignedToken(author)
+	claims := map[string]interface{}{
+		"author_id": author.ID,
+		"author_nick": author.Nick,
+		"exp": ExpirationTime(72).Unix(),
+	}
+	signedToken, err := CreateSignedToken(claims)
 	if err != nil {
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
