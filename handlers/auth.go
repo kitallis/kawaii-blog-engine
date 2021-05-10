@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"kawaii-blog-engine/config"
+	"kawaii-blog-engine/models"
+
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
-	"github.com/nid90/kawaii-blog-engine/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -38,5 +41,43 @@ func SignIn(ctx *fiber.Ctx) error {
 		return err
 	}
 
+	setTokenInCookie(ctx, author)
+
 	return ctx.Redirect("/posts")
+}
+
+func setTokenInCookie(ctx *fiber.Ctx, author *models.Author) error {
+	claims := map[string]interface{}{
+		"author_id": author.ID,
+		"author_nick": author.Nick,
+		"exp": config.ExpirationTime(72).Unix(),
+	}
+	token, err := createSignedToken(claims)
+	if err != nil {
+		return err
+	}
+	cfg := config.DefaultCookieConfig()
+	cfg.Value = token
+	ctx.Cookie(&fiber.Cookie{
+		Name:     cfg.Name,
+		Value:    cfg.Value,
+		Domain:   cfg.Domain,
+		Path:     cfg.Path,
+		Expires:  cfg.Expires,
+		Secure:   cfg.Secure,
+		HTTPOnly: cfg.HTTPOnly,
+		SameSite: cfg.SameSite,
+	})
+	return nil
+}
+
+func createSignedToken(claims map[string]interface{}) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+	tokenClaims := token.Claims.(jwt.MapClaims)
+	for key, value := range claims {
+		tokenClaims[key] = value
+	}
+	signedToken, err := token.SignedString([]byte(config.Config("SECRET")))
+
+	return signedToken, err
 }

@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"github.com/nid90/kawaii-blog-engine/config"
+	"kawaii-blog-engine/config"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

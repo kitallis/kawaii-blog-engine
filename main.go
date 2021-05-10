@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html"
-	"github.com/nid90/kawaii-blog-engine/database"
-	"github.com/nid90/kawaii-blog-engine/models"
-	"github.com/nid90/kawaii-blog-engine/routes"
+	"kawaii-blog-engine/database"
+	"kawaii-blog-engine/models"
+	"kawaii-blog-engine/routes"
 	"log"
 )
 

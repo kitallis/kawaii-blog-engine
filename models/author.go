@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/nid90/kawaii-blog-engine/database"
+	"kawaii-blog-engine/database"
 	"gorm.io/gorm"
 )
 
