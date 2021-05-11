@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"kawaii-blog-engine/config"
-	"kawaii-blog-engine/models"
-	"kawaii-blog-engine/services"
-
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
+	"kawaii-blog-engine/config"
+	"kawaii-blog-engine/models"
+	"kawaii-blog-engine/services/cookie"
+	"kawaii-blog-engine/services/csrf"
+	jwtService "kawaii-blog-engine/services/jwt"
 )
 
 func SignInView(ctx *fiber.Ctx) error {
@@ -20,54 +20,46 @@ func SignIn(ctx *fiber.Ctx) error {
 		Password string
 	}
 	
-	signIndata := new(SignInData)
-	if err := ctx.BodyParser(signIndata); err != nil {
-		ctx.Status(fiber.StatusInternalServerError)
-		return err
+	signInData := new(SignInData)
+	if err := ctx.BodyParser(signInData); err != nil {
+		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	author, err := models.FindAuthorByEmail(signIndata.Email)
+	author, err := models.FindAuthorByEmail(signInData.Email)
 	if err != nil {
-		ctx.Status(fiber.StatusInternalServerError)
-		return err
+		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(author.Password), []byte(signIndata.Password))
+	// TODO: gracefully handle password errors
+	err = bcrypt.CompareHashAndPassword([]byte(author.Password), []byte(signInData.Password))
 	if err == bcrypt.ErrMismatchedHashAndPassword {
-		// TODO: gracefully handle password errors
 		ctx.Status(fiber.StatusUnauthorized)
 		return SignInView(ctx)
 	} else if err != nil {
-		ctx.Status(fiber.StatusInternalServerError)
-		return err
+		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	setTokenInCookie(ctx, author)
+	generatedCookie, err := createCookie(author)
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
 
+	ctx.Cookie(generatedCookie)
 	return ctx.Redirect("/posts")
 }
 
-func setTokenInCookie(ctx *fiber.Ctx, author *models.Author) error {
+func createCookie(author *models.Author) (*fiber.Cookie, error) {
 	claims := map[string]interface{}{
 		"author_id": author.ID,
 		"author_nick": author.Nick,
 		"exp": config.ExpirationTime(72).Unix(),
+		"cst": csrf.Create(),
 	}
-	token, err := services.CreateSignedToken(claims)
+
+	token, err := jwtService.Create(claims)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	cfg := config.DefaultCookieConfig()
-	cfg.Value = token
-	ctx.Cookie(&fiber.Cookie{
-		Name:     cfg.Name,
-		Value:    cfg.Value,
-		Domain:   cfg.Domain,
-		Path:     cfg.Path,
-		Expires:  cfg.Expires,
-		Secure:   cfg.Secure,
-		HTTPOnly: cfg.HTTPOnly,
-		SameSite: cfg.SameSite,
-	})
-	return nil
+
+	return cookie.Create(token), nil
 }
