@@ -16,6 +16,7 @@ func UpdateTokenInCookie(ctx *fiber.Ctx) error {
 	if token == "" {
 		return errors.New("missing token cookie")
 	}
+
 	verifiedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		return []byte(config.Config("SECRET")), nil
 	})
@@ -23,6 +24,7 @@ func UpdateTokenInCookie(ctx *fiber.Ctx) error {
 		ctx.Status(fiber.StatusForbidden)
 		return err
 	}
+
 	csrfToken := utils.UUID()
 	claims := verifiedToken.Claims.(jwt.MapClaims)
 	claims["cst"] = csrfToken
@@ -40,5 +42,6 @@ func UpdateTokenInCookie(ctx *fiber.Ctx) error {
 		HTTPOnly: cfg.HTTPOnly,
 		SameSite: cfg.SameSite,
 	})
+	
 	return ctx.Next()
 }

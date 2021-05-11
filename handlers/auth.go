@@ -3,6 +3,7 @@ package handlers
 import (
 	"kawaii-blog-engine/config"
 	"kawaii-blog-engine/models"
+	"kawaii-blog-engine/services"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
@@ -52,7 +53,7 @@ func setTokenInCookie(ctx *fiber.Ctx, author *models.Author) error {
 		"author_nick": author.Nick,
 		"exp": config.ExpirationTime(72).Unix(),
 	}
-	token, err := CreateSignedToken(claims)
+	token, err := services.CreateSignedToken(claims)
 	if err != nil {
 		return err
 	}
@@ -69,15 +70,4 @@ func setTokenInCookie(ctx *fiber.Ctx, author *models.Author) error {
 		SameSite: cfg.SameSite,
 	})
 	return nil
-}
-
-func CreateSignedToken(claims map[string]interface{}) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
-	tokenClaims := token.Claims.(jwt.MapClaims)
-	for key, value := range claims {
-		tokenClaims[key] = value
-	}
-	signedToken, err := token.SignedString([]byte(config.Config("SECRET")))
-
-	return signedToken, err
 }
