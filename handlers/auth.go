@@ -52,7 +52,7 @@ func setTokenInCookie(ctx *fiber.Ctx, author *models.Author) error {
 		"author_nick": author.Nick,
 		"exp": config.ExpirationTime(72).Unix(),
 	}
-	token, err := createSignedToken(claims)
+	token, err := CreateSignedToken(claims)
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func setTokenInCookie(ctx *fiber.Ctx, author *models.Author) error {
 	return nil
 }
 
-func createSignedToken(claims map[string]interface{}) (string, error) {
+func CreateSignedToken(claims map[string]interface{}) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	tokenClaims := token.Claims.(jwt.MapClaims)
 	for key, value := range claims {
