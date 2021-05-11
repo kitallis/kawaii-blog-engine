@@ -1,4 +1,4 @@
-module github.com/nid90/kawaii-blog-engine
+module kawaii-blog-engine
 
 go 1.15
 

@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/nid90/kawaii-blog-engine/database"
-	"github.com/nid90/kawaii-blog-engine/models"
+	"kawaii-blog-engine/database"
+	"kawaii-blog-engine/models"
 )
 
 func CreatePost(ctx *fiber.Ctx) error {
