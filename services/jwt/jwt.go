@@ -24,7 +24,8 @@ func Parse(tokenString string) (*jwt.Token, error) {
 		return nil, errors.New("missing token cookie")
 	}
 
-	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	parser := jwt.Parser{UseJSONNumber: true}
+	return parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(config.Config("SECRET")), nil
 	})
 }

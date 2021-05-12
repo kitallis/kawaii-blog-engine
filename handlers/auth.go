@@ -52,9 +52,9 @@ func createCookie(author *models.Author) (*fiber.Cookie, error) {
 	claims := map[string]interface{}{
 		"author_id": author.ID,
 		"author_nick": author.Nick,
-		"exp": config.ExpirationTime(72).Unix(),
+		"exp": config.ExpirationTime(2).Unix(),
+		"refresh_until": config.ExpirationTime(168).Unix(),
 		"cst": csrf.Create(),
-		"iat": config.IssueTime(),
 	}
 
 	token, err := jwtService.Create(claims)

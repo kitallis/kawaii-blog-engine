@@ -16,11 +16,7 @@ type CookieConfig struct {
 }
 
 func ExpirationTime(ttl time.Duration) time.Time {
-	return time.Now().Add(time.Hour * ttl)
-}
-
-func IssueTime() time.Time {
-	return time.Now()
+	return time.Now().Add(time.Second * ttl)
 }
 
 func DefaultCookieConfig() CookieConfig {
@@ -29,7 +25,7 @@ func DefaultCookieConfig() CookieConfig {
 		Value: "",
 		Domain: "",
 		Path: "",
-		Expires: ExpirationTime(72),
+		Expires: ExpirationTime(180),
 		Secure: true,
 		HTTPOnly: true,
 		SameSite: "Strict",
