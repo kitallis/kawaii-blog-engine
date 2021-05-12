@@ -22,6 +22,7 @@ func Refresh() fiber.Handler {
 		ctx.Cookie(cookie.Create(newTokenString))
 		ctx.Locals("CSRFToken", csrfToken)
 		ctx.Locals("verifiedToken", newToken)
+		// revoke verifiedToken
 
 		return ctx.Next()
 	}
@@ -39,8 +40,8 @@ func Check() fiber.Handler {
 		if csrfToken == authenticityToken {
 			return ctx.Next()
 		} else {
-			ctx.Cookie(cookie.Expire())
-			return ctx.SendStatus(fiber.StatusInternalServerError)
+			// revoke jwt token
+			return ctx.SendStatus(fiber.StatusForbidden)
 		}
 	}
 }

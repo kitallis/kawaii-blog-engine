@@ -9,7 +9,6 @@ type CookieConfig struct {
 	Value string
 	Domain string
 	Path string
-	Expires time.Time
 	Secure   bool
 	HTTPOnly bool
 	SameSite string
@@ -25,7 +24,6 @@ func DefaultCookieConfig() CookieConfig {
 		Value: "",
 		Domain: "",
 		Path: "",
-		Expires: ExpirationTime(180),
 		Secure: true,
 		HTTPOnly: true,
 		SameSite: "Strict",

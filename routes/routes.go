@@ -1,12 +1,11 @@
 package routes
 
 import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"kawaii-blog-engine/handlers"
 	"kawaii-blog-engine/middlewares/csrf"
 	"kawaii-blog-engine/middlewares/protected"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func SetupRoutes(fiberApp *fiber.App) {
@@ -15,10 +14,9 @@ func SetupRoutes(fiberApp *fiber.App) {
 
 	// common middlewares
 	app := fiberApp.Group("/", logger.New())
-	// app := fiberApp.Group("/", logger.New(), recover.New())
 
 	// auth
-	authGroup := app.Group("/auth")
+	authGroup := app.Group("/auth", protected.Bypass())
 	authGroup.Post("/", handlers.SignIn)
 	authGroup.Get("/new", handlers.SignInView)
 
@@ -28,8 +26,8 @@ func SetupRoutes(fiberApp *fiber.App) {
 	authorGroup.Get("/new", handlers.SignUpView)
 
 	// post
-	postGroup := app.Group("/posts", protected.New())
+	postGroup := app.Group("/posts", protected.Halt())
+	postGroup.Post("/", csrf.Check(), csrf.Refresh(), handlers.CreatePost)
 	postGroup.Get("/", csrf.Refresh(), handlers.FetchPosts)
 	postGroup.Get("/new", csrf.Refresh(), handlers.NewPost)
-	postGroup.Post("/", csrf.Check(), csrf.Refresh(), handlers.CreatePost)
 }

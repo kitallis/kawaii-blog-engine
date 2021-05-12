@@ -32,7 +32,7 @@ func Parse(tokenString string) (*jwt.Token, error) {
 	})
 }
 
-func Refresh(tokenString string) (*jwt.Token, error) {
+func ParseOrRefresh(tokenString string) (*jwt.Token, error) {
 	verifiedToken, err := Parse(tokenString)
 
 	switch {
