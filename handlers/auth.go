@@ -54,7 +54,7 @@ func createCookie(author *models.Author) (*fiber.Cookie, error) {
 		"author_nick": author.Nick,
 		"exp": config.ExpirationTime(72).Unix(),
 		"cst": csrf.Create(),
-		"iat": config.ExpirationTime(72),
+		"iat": config.IssueTime(),
 	}
 
 	token, err := jwtService.Create(claims)
