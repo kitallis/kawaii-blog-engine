@@ -15,6 +15,7 @@ func SetupRoutes(fiberApp *fiber.App) {
 
 	// common middlewares
 	app := fiberApp.Group("/", logger.New())
+	// app := fiberApp.Group("/", logger.New(), recover.New())
 
 	// auth
 	authGroup := app.Group("/auth")
