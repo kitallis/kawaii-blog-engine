@@ -11,6 +11,7 @@ import (
 func Refresh() fiber.Handler {
 	return func(ctx *fiber.Ctx) (err error) {
 		csrfToken := csrf.Create()
+		ctx.Locals("CSRFToken", csrfToken)
 
 		verifiedToken := ctx.Locals("verifiedToken").(*jwt.Token)
 		if verifiedToken == nil  {

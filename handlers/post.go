@@ -29,5 +29,6 @@ func FetchPosts(c *fiber.Ctx) error {
 }
 
 func NewPost(c *fiber.Ctx) error {
-	return c.Render("post/new", nil, "layout/main")
+	locals := fiber.Map{"authenticity_token": c.Locals("CSRFToken")}
+	return c.Render("post/new", locals, "layout/main")
 }

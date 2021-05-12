@@ -5,5 +5,7 @@
     <label for="post_content" name="post">Content</label>
     <input id="post_content" name="content" type="textarea"></input>
 
+    <input type="hidden" name="authenticity_token" value="{{.authenticity_token}}">
+
     <button type="submit"> Create Post </button>
 </form>

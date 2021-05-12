@@ -3,6 +3,7 @@ package routes
 import (
 	"kawaii-blog-engine/handlers"
 	"kawaii-blog-engine/middlewares/cookie"
+	"kawaii-blog-engine/middlewares/csrf"
 	"kawaii-blog-engine/middlewares/protected"
 
 	"github.com/gofiber/fiber/v2"
@@ -27,8 +28,8 @@ func SetupRoutes(fiberApp *fiber.App) {
 	authorGroup.Get("/new", handlers.SignUpView)
 
 	// post
-	postGroup := app.Group("/posts", protected.New(), cookie.Refresh())
-	postGroup.Get("/", handlers.FetchPosts)
-	postGroup.Get("/new", handlers.NewPost)
-	postGroup.Post("/", handlers.CreatePost)
+	postGroup := app.Group("/posts", protected.New())
+	postGroup.Get("/", cookie.Refresh(), handlers.FetchPosts)
+	postGroup.Get("/new", cookie.Refresh(), handlers.NewPost)
+	postGroup.Post("/", csrf.New(), cookie.Refresh(), handlers.CreatePost)
 }
