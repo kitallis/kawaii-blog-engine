@@ -15,7 +15,7 @@ type CookieConfig struct {
 }
 
 func ExpirationTime(ttl time.Duration) time.Time {
-	return time.Now().Add(time.Second * ttl)
+	return time.Now().Add(time.Hour * ttl)
 }
 
 func DefaultCookieConfig() CookieConfig {

@@ -52,7 +52,7 @@ func createCookie(author *models.Author) (*fiber.Cookie, error) {
 	claims := map[string]interface{}{
 		"author_id": author.ID,
 		"author_nick": author.Nick,
-		"exp": config.ExpirationTime(2).Unix(),
+		"exp": config.ExpirationTime(1).Unix(),
 		"refresh_until": config.ExpirationTime(168).Unix(),
 		"cst": csrf.Create(),
 	}

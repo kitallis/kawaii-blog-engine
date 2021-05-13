@@ -4,8 +4,8 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
-	"github.com/patrickmn/go-cache"
 	jwtCache "kawaii-blog-engine/cache/jwt"
+	"kawaii-blog-engine/config"
 	"kawaii-blog-engine/services/cookie"
 	"kawaii-blog-engine/services/csrf"
 	jwtService "kawaii-blog-engine/services/jwt"
@@ -14,7 +14,8 @@ import (
 func Refresh() fiber.Handler {
 	return func(ctx *fiber.Ctx) (err error) {
 		csrfToken := csrf.Create()
-		verifiedToken := ctx.Locals("verifiedToken").(*jwt.Token)
+		tokenString := ctx.Cookies(config.DefaultCookieConfig().Name)
+		verifiedToken, _ := jwtService.Parse(tokenString)
 
 		claims := verifiedToken.Claims.(jwt.MapClaims)
 		claims["cst"] = csrfToken
@@ -25,7 +26,7 @@ func Refresh() fiber.Handler {
 		ctx.Locals("CSRFToken", csrfToken)
 		ctx.Locals("verifiedToken", newToken)
 
-		jwtCache.DenyList.Set(verifiedToken.Raw, true, cache.DefaultExpiration)
+		jwtCache.Set(tokenString)
 
 		return ctx.Next()
 	}
@@ -44,6 +45,7 @@ func Check() fiber.Handler {
 			return ctx.Next()
 		} else {
 			// revoke
+			//_ = jwtCache.DenyList.Set(verifiedToken.Raw, []byte("true"), 1 * time.Hour)
 			return ctx.SendStatus(fiber.StatusForbidden)
 		}
 	}

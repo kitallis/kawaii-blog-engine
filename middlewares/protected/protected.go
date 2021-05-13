@@ -12,13 +12,12 @@ const rootPath = "/posts"
 func Halt() fiber.Handler {
 	return func(ctx *fiber.Ctx) (err error) {
 		tokenString := ctx.Cookies(config.DefaultCookieConfig().Name)
-		newToken, err := jwtService.ParseOrRefresh(tokenString)
+		_, err = jwtService.ParseOrRefresh(tokenString)
 		if err != nil {
 			fmt.Println(err)
 			return ctx.SendStatus(fiber.StatusForbidden)
 		}
 
-		ctx.Locals("verifiedToken", newToken)
 		return ctx.Next()
 	}
 }

@@ -9,11 +9,13 @@ import (
 )
 
 func SetupRoutes(fiberApp *fiber.App) {
-	// public assets
-	fiberApp.Static("/", "./assets")
-
 	// common middlewares
-	app := fiberApp.Group("/", logger.New())
+	app := fiberApp.Group("/", logger.New(logger.Config {
+		Format: "[${time}] - ${latency} - ${status} ${method} ${path}\n",
+	}))
+
+	// public assets
+	app.Static("/", "./assets")
 
 	// auth
 	authGroup := app.Group("/auth", protected.Bypass())
@@ -26,8 +28,8 @@ func SetupRoutes(fiberApp *fiber.App) {
 	authorGroup.Get("/new", handlers.SignUpView)
 
 	// post
-	postGroup := app.Group("/posts", protected.Halt())
+	postGroup := app.Group("/posts")
 	postGroup.Post("/", csrf.Check(), csrf.Refresh(), handlers.CreatePost)
-	postGroup.Get("/", csrf.Refresh(), handlers.FetchPosts)
+	postGroup.Get("/", handlers.FetchPosts)
 	postGroup.Get("/new", csrf.Refresh(), handlers.NewPost)
 }
