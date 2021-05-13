@@ -3,7 +3,10 @@ package jwt
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/patrickmn/go-cache"
+	jwtCache "kawaii-blog-engine/cache/jwt"
 	"kawaii-blog-engine/config"
 	"time"
 )
@@ -22,14 +25,20 @@ func Create(claims map[string]interface{}) (string, error) {
 }
 
 func Parse(tokenString string) (*jwt.Token, error) {
-	if tokenString == "" {
+	switch {
+	case tokenString == "":
 		return nil, errors.New("missing token cookie")
+	case isRevoked(tokenString):
+		fmt.Println("revoked token is...")
+		fmt.Println(tokenString)
+		fmt.Println(jwtCache.DenyList.Items())
+		return nil, errors.New("token has been revoked")
+	default:
+		parser := jwt.Parser{UseJSONNumber: true}
+		return parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			return []byte(config.Config("SECRET")), nil
+		})
 	}
-
-	parser := jwt.Parser{UseJSONNumber: true}
-	return parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(config.Config("SECRET")), nil
-	})
 }
 
 func ParseOrRefresh(tokenString string) (*jwt.Token, error) {
@@ -47,6 +56,8 @@ func ParseOrRefresh(tokenString string) (*jwt.Token, error) {
 			if createErr != nil || parseErr != nil {
 				return nil, errors.New("couldn't create or parse the jwt token")
 			}
+
+			jwtCache.DenyList.Set(verifiedToken.Raw, true, cache.DefaultExpiration)
 
 			return newToken, nil
 		} else {
@@ -71,3 +82,7 @@ func isExpired(err error) bool {
 	return ok && ve.Errors&(jwt.ValidationErrorExpired) != 0
 }
 
+func isRevoked(tokenString string) bool {
+	_, found := jwtCache.DenyList.Get(tokenString)
+	return found
+}

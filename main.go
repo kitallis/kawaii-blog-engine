@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html"
+	jwtCache "kawaii-blog-engine/cache/jwt"
 	"kawaii-blog-engine/database"
 	"kawaii-blog-engine/models"
 	"kawaii-blog-engine/routes"
@@ -18,6 +19,7 @@ func InitMigrations() {
 func main() {
 	// init
 	database.InitDatabase()
+	jwtCache.InitDenyList()
 	InitMigrations()
 	engine := html.New("./views/", ".html")
 	app := fiber.New(fiber.Config{Views: engine})

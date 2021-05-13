@@ -1,6 +1,7 @@
 package protected
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"kawaii-blog-engine/config"
 	jwtService "kawaii-blog-engine/services/jwt"
@@ -13,6 +14,7 @@ func Halt() fiber.Handler {
 		tokenString := ctx.Cookies(config.DefaultCookieConfig().Name)
 		newToken, err := jwtService.ParseOrRefresh(tokenString)
 		if err != nil {
+			fmt.Println(err)
 			return ctx.SendStatus(fiber.StatusForbidden)
 		}
 
